@@ -2,10 +2,9 @@ package com.example.springmicroservices.user;
 
 import org.springframework.stereotype.Component;
 
-import java.util.Date;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.lang.String.format;
 
@@ -18,7 +17,8 @@ public class UserDao {
         users.add(User.builder().id(1).name("Luke").birthDate(new Date()).build());
         users.add(User.builder().id(2).name("Leia").birthDate(new Date()).build());
         users.add(User.builder().id(3).name("Han").birthDate(new Date()).build());
-        users.add(User.builder().id(3).name("Chewie").birthDate(new Date()).build());
+        users.add(User.builder().id(4).name("Chewbacca").birthDate(new Date()).build());
+        userCount = users.size();
     }
 
     public List<User> findAll() {
