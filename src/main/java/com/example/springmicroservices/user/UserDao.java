@@ -36,8 +36,7 @@ public class UserDao {
     public User findOne(int id) {
         return users.stream()
                 .filter(u -> u.getId() == id)
-                .findFirst().orElseThrow(() -> new RuntimeException(
-                        format("Could not find user with id = ", id)
-                ));
+                .findFirst()
+                .orElseThrow(() -> new UserNotFoundException(id));
     }
 }
