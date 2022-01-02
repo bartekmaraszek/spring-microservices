@@ -4,6 +4,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 
 import static java.lang.String.format;
@@ -38,5 +39,17 @@ public class UserDao {
                 .filter(u -> u.getId() == id)
                 .findFirst()
                 .orElseThrow(() -> new UserNotFoundException(id));
+    }
+
+    public User deleteById(int id) {
+        Iterator<User> iter = users.iterator();
+        while(iter.hasNext()) {
+            User user = iter.next();
+            if(user.getId() == id) {
+                iter.remove();
+                return user;
+            }
+        }
+        throw new UserNotFoundException(id);
     }
 }

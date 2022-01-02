@@ -26,7 +26,7 @@ public class UserController {
         return userDao.findOne(userId);
     }
 
-    @PostMapping("user")
+    @PostMapping("/user")
     public ResponseEntity<User> createUser(@RequestBody User user) {
         User savedUser = userDao.save(user);
         // This will build the URI and put it in 'Location' header:
@@ -41,5 +41,11 @@ public class UserController {
         return ResponseEntity
                 .created(resourceLocation)
                 .body(savedUser);
+    }
+
+    @DeleteMapping("/user/{userId}")
+    public ResponseEntity<User> deleteById(@PathVariable("userId") int userId) {
+        userDao.deleteById(userId);
+        return ResponseEntity.noContent().build();
     }
 }
