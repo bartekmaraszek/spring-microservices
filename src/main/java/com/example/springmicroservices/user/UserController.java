@@ -1,6 +1,10 @@
 package com.example.springmicroservices.user;
 
 import lombok.AllArgsConstructor;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilderDsl;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -8,6 +12,10 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import javax.validation.Valid;
 import java.net.URI;
 import java.util.List;
+import java.util.stream.Collectors;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 @AllArgsConstructor
@@ -16,15 +24,28 @@ public class UserController {
     private UserDao userDao;
 
     @GetMapping("/users")
-    public List<User> retrieveAllUsers() {
+    public CollectionModel<EntityModel<User>> retrieveAllUsers() {
         // TODO: eTag and CacheControl
-        return userDao.findAll();
+        List<EntityModel<User>> users = userDao.findAll().stream()
+                .map(user -> EntityModel.of(
+                        user,
+                        linkTo(methodOn(this.getClass()).retrieveUser(user.getId())).withSelfRel(),
+                        linkTo(methodOn(this.getClass()).retrieveAllUsers()).withRel("users")
+                )).collect(Collectors.toList());
+        return CollectionModel.of(users, linkTo(methodOn(this.getClass()).retrieveAllUsers()).withSelfRel());
     }
 
     @GetMapping("/user/{userId}")
-    public User retrieveUser(@PathVariable("userId") int userId) {
+    public ResponseEntity<EntityModel<User>> retrieveUser(@PathVariable("userId") int userId) {
         // TODO: eTag and CacheControl
-        return userDao.findOne(userId);
+        User user = userDao.findOne(userId);
+        EntityModel<User> model = EntityModel.of(user);
+        WebMvcLinkBuilder link = linkTo(methodOn(this.getClass()).retrieveAllUsers());
+        model.add(link.withRel("all-users"));
+
+        return ResponseEntity
+                .status(200)
+                .body(model);
     }
 
     @PostMapping("/user")
