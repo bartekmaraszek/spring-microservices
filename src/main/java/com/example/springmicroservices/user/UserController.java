@@ -1,8 +1,10 @@
 package com.example.springmicroservices.user;
 
 import lombok.AllArgsConstructor;
+import org.springframework.hateoas.Affordance;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.Link;
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilderDsl;
 import org.springframework.http.ResponseEntity;
@@ -14,8 +16,7 @@ import java.net.URI;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 
 @RestController
 @AllArgsConstructor
@@ -38,10 +39,15 @@ public class UserController {
     @GetMapping("/user/{userId}")
     public ResponseEntity<EntityModel<User>> retrieveUser(@PathVariable("userId") int userId) {
         // TODO: eTag and CacheControl
+
+        // based on: https://www.youtube.com/watch?v=nVEmfmdDUXU 
+        Link selfLink = linkTo(methodOn(this.getClass()).retrieveUser(userId)).withSelfRel();
+        Affordance update = afford(methodOn(this.getClass()).updateUser(null, userId));
+        Link aggregateRoot = linkTo(methodOn(this.getClass()).retrieveAllUsers()).withRel("users");
+
         User user = userDao.findOne(userId);
-        EntityModel<User> model = EntityModel.of(user);
-        WebMvcLinkBuilder link = linkTo(methodOn(this.getClass()).retrieveAllUsers());
-        model.add(link.withRel("all-users"));
+        EntityModel<User> model = EntityModel.of(
+                user, selfLink.andAffordance(update), aggregateRoot);
 
         return ResponseEntity
                 .status(200)
@@ -63,6 +69,11 @@ public class UserController {
         return ResponseEntity
                 .created(resourceLocation)
                 .body(savedUser);
+    }
+
+    @PatchMapping("/user")
+    public ResponseEntity<User> updateUser(@Valid @RequestBody User user, int userId) {
+        return ResponseEntity.ok().body(user);
     }
 
     @DeleteMapping("/user/{userId}")
