@@ -40,7 +40,7 @@ public class UserController {
     public ResponseEntity<EntityModel<User>> retrieveUser(@PathVariable("userId") int userId) {
         // TODO: eTag and CacheControl
 
-        // based on: https://www.youtube.com/watch?v=nVEmfmdDUXU 
+        // based on: https://www.youtube.com/watch?v=nVEmfmdDUXU
         Link selfLink = linkTo(methodOn(this.getClass()).retrieveUser(userId)).withSelfRel();
         Affordance update = afford(methodOn(this.getClass()).updateUser(null, userId));
         Link aggregateRoot = linkTo(methodOn(this.getClass()).retrieveAllUsers()).withRel("users");
